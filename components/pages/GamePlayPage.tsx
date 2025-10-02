@@ -1,7 +1,9 @@
 
-import React, { useEffect, useState } from 'react';
+
+import React from 'react';
 import { Game } from '../../types';
-import LoadingSpinner from '../ui/LoadingSpinner';
+import QuizGame from '../games/QuizGame';
+import { cosmicQuiz } from '../../services/data/quizData';
 
 interface GamePlayPageProps {
   game: Game;
@@ -9,36 +11,42 @@ interface GamePlayPageProps {
 }
 
 const GamePlayPage: React.FC<GamePlayPageProps> = ({ game, onComplete }) => {
-    const [status, setStatus] = useState('Initializing...');
 
-    useEffect(() => {
-        const timer1 = setTimeout(() => {
-            setStatus('Loading assets...');
-        }, 1000);
+  const handleQuizComplete = (finalScore: number) => {
+    // For now, we consider the game 'won' if the quiz is completed.
+    // We can use the finalScore for more complex logic later.
+    console.log(`Quiz finished with score: ${finalScore}`);
+    onComplete(game, true);
+  };
 
-        const timer2 = setTimeout(() => {
-            setStatus('Match found! Starting game...');
-        }, 2500);
-        
-        const timer3 = setTimeout(() => {
-            // For this simulation, the user always wins
-            onComplete(game, true);
-        }, 4000);
-
-        return () => {
-            clearTimeout(timer1);
-            clearTimeout(timer2);
-            clearTimeout(timer3);
-        };
-    }, [game, onComplete]);
+  const renderGame = () => {
+    // We can expand this switch to include more game types later
+    switch (game.id) {
+      case 'g1': // This is the ID for 'Cosmic Quiz'
+        return <QuizGame questions={cosmicQuiz} onComplete={handleQuizComplete} />;
+      default:
+        return (
+          <div className='text-center'>
+            <h2 className="text-2xl font-bold text-brand-highlight">{game.title}</h2>
+            <p className="text-brand-subtext">This game type is not yet implemented.</p>
+            <button 
+              onClick={() => onComplete(game, false)} 
+              className="mt-4 bg-brand-tertiary px-4 py-2 rounded-lg">
+              Close
+            </button>
+          </div>
+        );
+    }
+  }
 
   return (
-    <div className="absolute inset-0 bg-brand-primary/95 backdrop-blur-sm flex flex-col items-center justify-center z-50">
-      <h1 className="text-4xl font-bold mb-4 text-brand-highlight animate-pulse">{game.title}</h1>
-      <LoadingSpinner />
-      <p className="mt-4 text-brand-subtext">{status}</p>
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+      <div className="w-full max-w-2xl">
+        {renderGame()}
+      </div>
     </div>
   );
 };
 
 export default GamePlayPage;
+
